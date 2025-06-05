@@ -9,21 +9,22 @@ app = Flask(__name__)
 line_bot_api = LineBotApi(config.CHANNEL_ACCESS_TOKEN)
 handler = WebhookHandler(config.CHANNEL_SECRET)
 
-@app.route("/", methods=["GET"])
-def health_check():
-    return "Line Bot is running!"
-
 @app.route("/callback", methods=["POST"])
 def callback():
-    signature = request.headers["X-Line-Signature"]
+    signature = request.headers.get("X-Line-Signature", "")  # ✅ 安全讀取
     body = request.get_data(as_text=True)
 
     try:
         handler.handle(body, signature)
     except InvalidSignatureError:
+        print("⚠️ 無效的 LINE 簽章，請檢查 CHANNEL_SECRET 是否正確")
         return "Invalid signature", 400
+    except Exception as e:
+        print("⚠️ Webhook 處理例外：", str(e))
+        return "Error", 500
 
     return "OK", 200
+
 
 @handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):

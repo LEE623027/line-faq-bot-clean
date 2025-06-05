@@ -1,0 +1,7 @@
+# 排除虛擬環境與大型暫存檔
+venv/
+__pycache__/
+*.pyc
+*.pkl
+*.xlsx
+faiss_index/

@@ -49,3 +49,8 @@ def handle_message(event):
         )
     except Exception as e:
         print("❌ 回覆訊息錯誤:", str(e))
+
+# ✅ 關鍵補上這段，讓 Render 正確偵測服務埠口
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)

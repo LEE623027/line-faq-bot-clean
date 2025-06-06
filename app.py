@@ -1,13 +1,19 @@
-from flask import Flask, request
+from flask import Flask, request, abort
 from linebot import LineBotApi, WebhookHandler
 from linebot.exceptions import InvalidSignatureError
 from linebot.models import MessageEvent, TextMessage, TextSendMessage
+import os
 import config
 
 app = Flask(__name__)
 
+# 讀取 config 的 token
 line_bot_api = LineBotApi(config.CHANNEL_ACCESS_TOKEN)
 handler = WebhookHandler(config.CHANNEL_SECRET)
+
+@app.route("/")
+def hello():
+    return "Line FAQ Bot is running."
 
 @app.route("/callback", methods=['POST'])
 def callback():
@@ -33,11 +39,15 @@ def callback():
 
 @handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
-    print("📩 使用者訊息：", event.message.text)
-    try:
-        line_bot_api.reply_message(
-            event.reply_token,
-            TextSendMessage(text="✅ 測試成功：你剛剛說的是「{}」".format(event.message.text))
-        )
-    except Exception as e:
-        print("❌ 回覆訊息錯誤：", e)
+    msg = event.message.text
+    print("📩 使用者訊息：", msg)
+
+    reply = f"✅ 測試成功！你剛剛說的是：「{msg}」"
+    line_bot_api.reply_message(
+        event.reply_token,
+        TextSendMessage(text=reply)
+    )
+
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 10000))  # Render 指定的 PORT
+    app.run(host="0.0.0.0", port=port)

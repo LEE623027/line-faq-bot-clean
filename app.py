@@ -14,18 +14,21 @@ def callback():
     signature = request.headers.get("X-Line-Signature", "")
     body = request.get_data(as_text=True)
 
-    print("🟡 收到 LINE Webhook：")
-    print("Headers:", dict(request.headers))
-    print("Body:", body)
+    print("🟡 [Webhook Debug] 收到 LINE POST")
+    print("🔹 Headers:", dict(request.headers))
+    print("🔹 X-Line-Signature:", signature)
+    print("🔹 Body:", body)
+    print("🔹 環境變數 CHANNEL_SECRET:", config.CHANNEL_SECRET[:10])  # 只印前 10 碼
+    print("🔹 環境變數 CHANNEL_ACCESS_TOKEN:", config.CHANNEL_ACCESS_TOKEN[:10])
 
     try:
         handler.handle(body, signature)
     except InvalidSignatureError:
-        print("❌ 簽章錯誤：CHANNEL_SECRET 錯")
+        print("❌ [錯誤] 簽章驗證失敗：請確認 CHANNEL_SECRET 是否正確")
         return "Invalid signature", 400
     except Exception as e:
-        print("❌ 發生例外錯誤：", e)
-        return f"Error: {str(e)}", 400
+        print("❌ [錯誤] webhook 發生例外：", e)
+        return "Error", 400
 
     return "OK", 200
 

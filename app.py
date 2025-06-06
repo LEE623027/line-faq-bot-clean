@@ -9,13 +9,11 @@ app = Flask(__name__)
 line_bot_api = LineBotApi(config.CHANNEL_ACCESS_TOKEN)
 handler = WebhookHandler(config.CHANNEL_SECRET)
 
-
-@app.route("/callback", methods=["POST"])
+@app.route("/callback", methods=['POST'])
 def callback():
     signature = request.headers.get("X-Line-Signature", "")
     body = request.get_data(as_text=True)
 
-    # 🔍 DEBUG 訊息：觀察 LINE 發送的資料與你載入的變數是否正確
     print("🟡 收到 LINE Webhook POST")
     print("🔹 X-Line-Signature:", signature)
     print("🔹 Body:", body)
@@ -25,14 +23,13 @@ def callback():
     try:
         handler.handle(body, signature)
     except InvalidSignatureError:
-        print("❌ InvalidSignatureError：簽章錯誤，請確認 CHANNEL_SECRET 是否正確")
+        print("❌ 簽章錯誤（InvalidSignatureError）：請確認 CHANNEL_SECRET 是否正確")
         return "Invalid signature", 400
     except Exception as e:
-        print("❌ webhook 發生例外錯誤：", str(e))
-        return "Error", 400
+        print("❌ 其他錯誤：", str(e))
+        return f"Error: {str(e)}", 400
 
     return "OK", 200
-
 
 @handler.add(MessageEvent, message=TextMessage)
 def handle_message(event):
@@ -40,11 +37,7 @@ def handle_message(event):
     try:
         line_bot_api.reply_message(
             event.reply_token,
-            TextSendMessage(text="✅ 測試成功！這是從 webhook 回來的回覆。")
+            TextSendMessage(text="✅ 測試成功：你剛剛說的是「{}」".format(event.message.text))
         )
     except Exception as e:
-        print("❌ 回覆訊息時錯誤：", str(e))
-
-
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=10000)
+        print("❌ 回覆訊息錯誤：", e)

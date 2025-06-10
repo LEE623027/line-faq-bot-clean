@@ -12,3 +12,6 @@ def query_knowledge(query_text):
     except Exception as e:
         print("[ERROR] 查詢錯誤：", str(e))
         return []
+def search_answer(query_text):
+    results = query_knowledge(query_text)
+    return results[0] if results else ""

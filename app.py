@@ -1,3 +1,4 @@
+from query import search_answer  # 假設 query.py 跟 app.py 同目錄
 from flask import Flask, request, abort
 from linebot import LineBotApi, WebhookHandler
 from linebot.models import MessageEvent, TextMessage, TextSendMessage
@@ -44,8 +45,17 @@ def handle_message(event):
     user_message = event.message.text
     print("📩 使用者訊息：", user_message)
 
-    reply = TextSendMessage(text=f"你說的是：{user_message}")
+    try:
+        answer = search_answer(user_message)
+        if not answer:
+            answer = "目前查無對應資料，請稍後再試，或聯絡工程師～"
+    except Exception as e:
+        print("❌ 查詢發生錯誤：", e)
+        answer = "發生錯誤，請稍後再試～"
+
+    reply = TextSendMessage(text=answer)
     line_bot_api.reply_message(event.reply_token, reply)
+
 
 
 if __name__ == "__main__":
